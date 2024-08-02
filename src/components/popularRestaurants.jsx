@@ -16,12 +16,12 @@ export default function PopularRestaurants() {
   }, [isLoggedIn]);
 
   const fetchData = async () => {
-    if (!localStorage.getItem("accessToken")) {
+    if (!sessionStorage.getItem("accessToken")) {
       return null;
     }
     const res = await axios.get("https://zomatoclone-kjxd.onrender.com/api/restaurant/all", {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
       }
     });
     setRestaurants(res.data.data);

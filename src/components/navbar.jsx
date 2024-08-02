@@ -1,20 +1,22 @@
 import { useState, useEffect } from "react";
 import Modal from 'react-modal';
-import logo from '../assets/eatery.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useDispatch } from "react-redux";
-import { setUserEmail, setIsLoggedIn } from "../Redux/Slices/userSlice";
-import { FaTruck } from "react-icons/fa";
-import { IoRestaurant } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserEmail, setIsLoggedIn, setUserID } from "../Redux/Slices/userSlice";
+import { IoRestaurant, IoCart, IoLogOut } from "react-icons/io5";
+import CartModal from "./Modals/cartModal";
 
 const Navbar = ({ isModalOpen, setIsModalOpen }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
+  const toggleCartModal = () => setIsCartModalOpen(!isCartModalOpen);
   const switchForm = () => {
     setIsLogin(!isLogin);
     setEmail("");
@@ -45,7 +47,7 @@ const Navbar = ({ isModalOpen, setIsModalOpen }) => {
         toast.success(`${isLogin ? 'Login' : 'Sign Up'} successful!`);
         if (isLogin) {
           const { accessToken } = data;
-          localStorage.setItem('accessToken', accessToken);
+          sessionStorage.setItem('accessToken', accessToken);
           dispatch(setIsLoggedIn(true));
         }
         toggleModal();
@@ -58,76 +60,115 @@ const Navbar = ({ isModalOpen, setIsModalOpen }) => {
     }
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('accessToken');
+    dispatch(setIsLoggedIn(false));
+    toast.success('Logout successful!');
+  };
+
   useEffect(() => {
+    // Check if the user is logged in when the component mounts
+    const token = sessionStorage.getItem('accessToken');
+    if (token) {
+      dispatch(setIsLoggedIn(true));
+    }
+
     if (isModalOpen) {
       document.body.classList.add('modal-blur');
     } else {
       document.body.classList.remove('modal-blur');
     }
-  }, [isModalOpen]);
+  }, [isModalOpen, dispatch]);
 
   return (
     <>
       <div className="w-[60%] flex items-center p-2">
         <div className="w-full flex justify-between items-center">
-          <div className="flex w-[35%] items-center justify-between">
-            <p className="text-2xl flex items-center font-sans text-white gap-2">
+          <a href="/">
+            <h1 className="text-3xl font-bold text-blue-100 flex items-center">
+              <IoRestaurant className="mr-2" />
               Eatery
-              <span><IoRestaurant/></span>
-            </p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <button onClick={() => { toggleModal(); setIsLogin(true); }} className="p-2 bg-blue-950 rounded-lg text-white hover:bg-gray-100 hover:text-gray-800 border-2 border-transparent hover:border-blue-950 transition-all text-xs">Login</button>
-            <button onClick={() => { toggleModal(); setIsLogin(false); }} className="p-2 bg-blue-950 rounded-lg text-white hover:bg-gray-100 hover:text-gray-800 border-2 border-transparent hover:border-blue-950 transition-all text-xs">Sign up</button>
+            </h1>
+          </a>
+          <div className="flex items-center gap-6">
+            {isLoggedIn && (
+              <>
+                <button
+                  className="text-white text-2xl hover:text-blue-500"
+                  onClick={toggleCartModal}
+                >
+                  <IoCart />
+                </button>
+                <button
+                  className="text-white text-2xl hover:text-blue-500"
+                  onClick={handleLogout}
+                >
+                  <IoLogOut />
+                </button>
+              </>
+            )}
+            {!isLoggedIn && (
+              <button
+                onClick={toggleModal}
+                className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              >
+                {isLogin ? "Login" : "Sign Up"}
+              </button>
+            )}
           </div>
         </div>
       </div>
-
       <Modal
         isOpen={isModalOpen}
         onRequestClose={toggleModal}
-        contentLabel="Authentication Modal"
+        contentLabel="Auth Modal"
         className="modal-content"
-        overlayClassName="modal-overlay "
-        shouldCloseOnOverlayClick={false} 
-         
+        overlayClassName="modal-overlay"
       >
-        <h2 className="text-2xl mb-4">{isLogin ? "Login" : "Sign Up"}</h2>
-        <form className="flex flex-col gap-4 w-full focus:outline-none" onSubmit={handleUser}>
+        <form onSubmit={handleUser} className="flex flex-col gap-4">
+          {!isLogin && (
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border border-gray-300 rounded p-2"
+            />
+          )}
           <input
             type="email"
             placeholder="Email"
-            className="p-2 border border-gray-300 rounded focus:outline-none"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="border border-gray-300 rounded p-2"
+            required
           />
           <input
             type="password"
             placeholder="Password"
-            className="p-2 border border-gray-300 rounded focus:outline-none"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="border border-gray-300 rounded p-2"
+            required
           />
-          {!isLogin && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              className="p-2 border border-gray-300 rounded focus:outline-none"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          )}
-          <button className="p-2 bg-blue-950 rounded-lg text-white hover:bg-gray-100 hover:text-gray-800 border-2 border-transparent hover:border-blue-950 transition-all focus:outline-none" type="submit">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+          >
             {isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
-        <p className="mt-4 cursor-pointer text-blue-600" onClick={switchForm}>
-          {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+        <p className="mt-4 text-center">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+          <button onClick={switchForm} className="text-blue-500 underline">
+            {isLogin ? "Sign Up" : "Login"}
+          </button>
         </p>
       </Modal>
+      <CartModal isOpen={isCartModalOpen} onRequestClose={toggleCartModal} />
       <ToastContainer />
     </>
   );
-}
+};
 
 export default Navbar;

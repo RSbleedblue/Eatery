@@ -1,6 +1,17 @@
-import bg1 from '../../assets/3.jpg';
 import { FaLocationDot, FaStar, FaTruckArrowRight } from "react-icons/fa6";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setRestaurantID, setRestaurantName } from "../../Redux/Slices/userSlice";
 const PopularRestoCards = ({restaurant}) => {
+  console.log(restaurant);
+  
+    const navigator = useNavigate();
+    const dispatch = useDispatch();
+    const handleExplore = async() => {
+      navigator("explore");
+      dispatch(setRestaurantName(restaurant.name));
+      dispatch(setRestaurantID(restaurant._id));
+    }
     return (
         <>
         <div className='bg-gray-100 flex flex-col rounded-2xl  shadow-xl'>
@@ -18,7 +29,7 @@ const PopularRestoCards = ({restaurant}) => {
             </div>
             <p className='flex gap-1 items-center text-sm text-gray-800'><span className='text-xl text-gray-500'><FaLocationDot /></span>{restaurant.address}</p>
           </div>
-          <button className='flex items-center gap-2 bg-blue-900 rounded-lg justify-center p-2 text-sm text-white hover:bg-blue-800 transition-all relative group'>
+          <button className='flex items-center gap-2 bg-blue-900 rounded-lg justify-center p-2 text-sm text-white hover:bg-blue-800 transition-all relative group' onClick={handleExplore}>
             Explore
             <span className='transition-transform duration-300 transform group-hover:translate-x-2'>
               <FaTruckArrowRight />

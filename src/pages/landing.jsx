@@ -4,6 +4,7 @@ import { setUserEmail, setIsLoggedIn} from '../Redux/Slices/userSlice';
 import HeroSection from "../components/heroSection";
 import Navbar from "../components/navbar";
 import PopularRestaurants from "../components/popularRestaurants";
+import { Outlet } from 'react-router-dom';
 
 const Landing = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -11,7 +12,7 @@ const Landing = () => {
   const isLoggedIn = useSelector(setIsLoggedIn);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (token) {
       // Here you can add a function to validate the token
       // If token is valid, dispatch(setIsLoggedIn(true));
@@ -27,7 +28,7 @@ const Landing = () => {
       {isLoggedIn ? (
         <>
           <HeroSection />
-          <PopularRestaurants />
+          <Outlet/>
         </>
       ) : null}
     </div>
